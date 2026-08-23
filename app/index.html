@@ -1,412 +1,226 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STAGE SET — September Pipeline Accelerator</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #0a0a0a;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* HEADER */
-        header {
-            text-align: center;
-            padding: 3rem 2rem 2rem;
-            border-bottom: 1px solid #1a1a1a;
-        }
-
-        .title {
-            font-size: 4rem;
-            font-weight: 900;
-            letter-spacing: 2px;
-            margin-bottom: 0.5rem;
-        }
-
-        .title .stage { color: #e63946; }
-        .title .set { color: #ffffff; }
-
-        .subtitle {
-            color: #888;
-            font-size: 0.85rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            margin-bottom: 1.5rem;
-        }
-
-        .date-badge {
-            display: inline-block;
-            border: 2px solid #ffd700;
-            color: #ffd700;
-            padding: 0.5rem 1.5rem;
-            border-radius: 4px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            letter-spacing: 1px;
-            margin-bottom: 1rem;
-        }
-
-        .countdown {
-            color: #aaa;
-            font-size: 0.9rem;
-            margin-top: 0.75rem;
-        }
-
-        .countdown span {
-            color: #ffd700;
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        /* TABS */
-        .tabs {
-            display: flex;
-            justify-content: center;
-            gap: 0;
-            background: #111;
-            border-bottom: 1px solid #222;
-        }
-
-        .tab-btn {
-            background: none;
-            border: none;
-            color: #888;
-            padding: 1rem 2rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .tab-btn:hover {
-            color: #ccc;
-        }
-
-        .tab-btn.active {
-            color: #ffd700;
-            border-bottom-color: #ffd700;
-        }
-
-        /* CONTENT */
-        .tab-content {
-            display: none;
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-            flex: 1;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* LEADERBOARD TABLE */
-        .leaderboard-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #111;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .leaderboard-table thead {
-            background: #1a1a1a;
-        }
-
-        .leaderboard-table th {
-            padding: 1rem;
-            text-align: left;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #888;
-            border-bottom: 1px solid #222;
-        }
-
-        .leaderboard-table td {
-            padding: 0.85rem 1rem;
-            border-bottom: 1px solid #1a1a1a;
-            font-size: 0.95rem;
-        }
-
-        .leaderboard-table tbody tr:hover {
-            background: #1a1a1a;
-        }
-
-        .leaderboard-table .rank {
-            color: #ffd700;
-            font-weight: 700;
-            width: 60px;
-        }
-
-        .leaderboard-table .manager-name {
-            font-weight: 600;
-        }
-
-        .leaderboard-table .pts {
-            color: #aaa;
-            text-align: center;
-        }
-
-        .leaderboard-table .total {
-            color: #ffd700;
-            font-weight: 700;
-            text-align: center;
-        }
-
-        .leaderboard-table th.center {
-            text-align: center;
-        }
-
-        /* DEAL TRACKER */
-        .deal-placeholder {
-            background: #111;
-            border: 1px dashed #333;
-            border-radius: 8px;
-            padding: 4rem 2rem;
-            text-align: center;
-            color: #666;
-            font-size: 1.1rem;
-        }
-
-        .deal-placeholder .icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        /* RULES */
-        .rules-section {
-            display: grid;
-            gap: 1.5rem;
-        }
-
-        .rule-card {
-            background: #111;
-            border: 1px solid #1a1a1a;
-            border-radius: 8px;
-            padding: 1.5rem 2rem;
-        }
-
-        .rule-card h3 {
-            color: #ffd700;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .rule-card ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .rule-card ul li {
-            padding: 0.4rem 0;
-            color: #ccc;
-            font-size: 0.95rem;
-        }
-
-        .rule-card ul li::before {
-            content: "▸ ";
-            color: #ffd700;
-        }
-
-        .rule-card .example {
-            background: #0a0a0a;
-            border: 1px solid #222;
-            border-radius: 4px;
-            padding: 1rem;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            color: #aaa;
-        }
-
-        .rule-card .example strong {
-            color: #ffd700;
-        }
-
-        /* FOOTER */
-        footer {
-            text-align: center;
-            padding: 2rem;
-            border-top: 1px solid #1a1a1a;
-            color: #555;
-            font-size: 0.85rem;
-        }
-
-        footer .creators {
-            margin-bottom: 0.5rem;
-            color: #777;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            .title { font-size: 2.5rem; }
-            .tab-btn { padding: 0.75rem 1rem; font-size: 0.85rem; }
-            .leaderboard-table { font-size: 0.85rem; }
-            .leaderboard-table th, .leaderboard-table td { padding: 0.6rem 0.5rem; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline Points — Field Pipeline Challenge</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;padding:2rem 1rem}
+.container{max-width:1200px;margin:0 auto}
+header{text-align:center;padding:2rem 0 1.5rem}
+.title{font-size:4rem;font-weight:900;letter-spacing:-2px;margin-bottom:0.5rem}
+.title .red{color:#e63946}
+.title .white{color:#fff}
+.subtitle{color:#888;letter-spacing:3px;text-transform:uppercase;font-size:0.85rem;margin-bottom:1.5rem}
+.date-badge{display:inline-block;border:2px solid #ffd700;color:#ffd700;padding:0.5rem 1.5rem;border-radius:50px;font-weight:700;font-size:0.9rem;margin-bottom:1rem}
+.countdown{font-size:1.5rem;font-weight:700;color:#fff;margin:1rem 0}
+.countdown span{color:#ffd700}
+.prize-pool{font-size:1.3rem;color:#ffd700;font-weight:700;margin-bottom:2rem}
+.tabs{display:flex;gap:0.5rem;border-bottom:2px solid #1a1a1a;margin-bottom:2rem;flex-wrap:wrap}
+.tab-btn{background:none;border:none;color:#888;font-size:1rem;padding:0.75rem 1.5rem;cursor:pointer;border-bottom:3px solid transparent;transition:all 0.2s;font-weight:600}
+.tab-btn:hover{color:#fff}
+.tab-btn.active{color:#ffd700;border-bottom-color:#ffd700}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.filter-bar{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem}
+.filter-btn{background:#111;border:1px solid #222;color:#888;padding:0.4rem 0.9rem;border-radius:20px;cursor:pointer;font-size:0.8rem;transition:all 0.2s}
+.filter-btn:hover{border-color:#ffd700;color:#ffd700}
+.filter-btn.active{background:#ffd700;color:#0a0a0a;border-color:#ffd700;font-weight:700}
+.leaderboard-header{color:#888;font-size:0.95rem;margin-bottom:1.5rem;text-align:center}
+.table-wrapper{overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:#111;border-radius:8px;overflow:hidden}
+th{background:#1a1a1a;color:#ffd700;padding:0.75rem 1rem;text-align:left;font-size:0.8rem;text-transform:uppercase;letter-spacing:1px}
+td{padding:0.75rem 1rem;border-bottom:1px solid #1a1a1a;font-size:0.9rem}
+tr:last-child td{border-bottom:none}
+.placeholder-row td{text-align:center;color:#666;padding:2rem;font-style:italic}
+.week-card{background:#111;border:1px solid #1a1a1a;border-radius:8px;padding:1.5rem 2rem;margin-bottom:1rem}
+.week-card h3{color:#ffd700;margin-bottom:0.5rem}
+.week-card p{color:#888}
+.rule-card{background:#111;border:1px solid #1a1a1a;border-radius:8px;padding:1.5rem 2rem;margin-bottom:1.5rem}
+.rule-card h3{margin-bottom:1rem;font-size:1.2rem}
+.rule-card p{color:#ccc;margin-bottom:0.75rem;line-height:1.6}
+.rule-card ul{list-style:none;padding:0}
+.rule-card ul li{color:#ccc;padding:0.4rem 0;padding-left:1.2rem;position:relative;line-height:1.6}
+.rule-card ul li::before{content:"→";position:absolute;left:0;color:#ffd700}
+.scoring-table{width:100%;margin:1rem 0}
+.scoring-table td{padding:0.5rem 1rem;border-bottom:1px solid #1a1a1a}
+.scoring-table td:first-child{color:#ccc}
+.scoring-table td:last-child{color:#ffd700;font-weight:700;text-align:right}
+.rule-card.incentivize{background:linear-gradient(135deg,#1a0a0a,#0a0a0a);border-color:#e63946}
+.rule-card.prizes{background:linear-gradient(135deg,#2a1a00,#0a0a0a);border:2px solid #ffd700;text-align:center}
+.rule-card.prizes h3{color:#ffd700}
+.prize-item{font-size:1.3rem;margin:0.75rem 0;font-weight:700}
+.prize-total{color:#ffd700;margin-top:1rem;font-size:1.1rem}
+.note{color:#888;font-size:0.85rem;font-style:italic;margin-top:0.75rem}
+footer{text-align:center;margin-top:3rem;padding:2rem 0;border-top:1px solid #1a1a1a;color:#666;font-size:0.85rem}
+footer p{margin:0.3rem 0}
+@media(max-width:768px){
+.title{font-size:2.5rem}
+.tabs{justify-content:center}
+.tab-btn{padding:0.5rem 1rem;font-size:0.85rem}
+.filter-btn{font-size:0.7rem;padding:0.3rem 0.6rem}
+}
+</style>
 </head>
 <body>
-
+<div class="container">
 <header>
-    <div class="title"><span class="stage">STAGE</span> <span class="set">SET</span></div>
-    <div class="subtitle">SEPTEMBER PIPELINE ACCELERATOR &middot; FIELD SALES &middot; ALL MANAGERS</div>
-    <div class="date-badge">SEPTEMBER 1 – 30, 2026</div>
-    <div class="countdown" id="countdown"></div>
+<div class="title"><span class="red">PIPELINE</span> <span class="white">POINTS</span></div>
+<div class="subtitle">FIELD PIPELINE CHALLENGE &middot; SELF-SOURCED SQL &middot; SEPTEMBER 2026</div>
+<div class="date-badge">SEPTEMBER 1 – 30, 2026</div>
+<div class="countdown" id="countdown">Loading...</div>
+<div class="prize-pool">🏆 $1,000 PRIZE POOL</div>
 </header>
 
-<nav class="tabs">
-    <button class="tab-btn active" data-tab="leaderboard">Manager Leaderboard</button>
-    <button class="tab-btn" data-tab="deals">Deal Tracker</button>
-    <button class="tab-btn" data-tab="rules">Rules &amp; Scoring</button>
-</nav>
+<div class="tabs">
+<button class="tab-btn active" data-tab="leaderboard">🏆 Leaderboard</button>
+<button class="tab-btn" data-tab="weekly">📊 Weekly Standings</button>
+<button class="tab-btn" data-tab="rules">📋 Rules & Scoring</button>
+</div>
 
-<!-- TAB 1: LEADERBOARD -->
 <div class="tab-content active" id="leaderboard">
-    <table class="leaderboard-table">
-        <thead>
-            <tr>
-                <th>Rank</th>
-                <th>Manager</th>
-                <th class="center">Created Pts</th>
-                <th class="center">Eval Pts</th>
-                <th class="center">Negotiation Pts</th>
-                <th class="center">Total</th>
-            </tr>
-        </thead>
-        <tbody id="leaderboard-body"></tbody>
-    </table>
+<p class="leaderboard-header">One Org-Wide Leaderboard — Points stack week over week</p>
+<div class="filter-bar" id="filterBar"></div>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr>
+<th>Rank</th><th>Rep Name</th><th>Team</th><th>SQL Pts</th><th>Demo Pts</th><th>Target Pts</th><th>Weekly #1 Pts</th><th>Total</th>
+</tr>
+</thead>
+<tbody id="leaderboardBody">
+<tr class="placeholder-row"><td colspan="8">Leaderboard will populate when the contest begins September 1</td></tr>
+</tbody>
+</table>
+</div>
 </div>
 
-<!-- TAB 2: DEAL TRACKER -->
-<div class="tab-content" id="deals">
-    <div class="deal-placeholder">
-        <div class="icon">📋</div>
-        <p>Deal movements will appear here when the contest begins September 1</p>
-    </div>
+<div class="tab-content" id="weekly">
+<div class="week-card"><h3>Week 1 — Sept 1–5</h3><p>Weekly standings will update each Monday starting September 8</p></div>
+<div class="week-card"><h3>Week 2 — Sept 8–12</h3><p>Weekly standings will update each Monday starting September 8</p></div>
+<div class="week-card"><h3>Week 3 — Sept 15–19</h3><p>Weekly standings will update each Monday starting September 8</p></div>
+<div class="week-card"><h3>Week 4 — Sept 22–30</h3><p>Weekly standings will update each Monday starting September 8</p></div>
 </div>
 
-<!-- TAB 3: RULES -->
 <div class="tab-content" id="rules">
-    <div class="rules-section">
-        <div class="rule-card">
-            <h3>Scoring</h3>
-            <ul>
-                <li><strong>1 point</strong> — Deal moved to <em>Created</em> stage</li>
-                <li><strong>2 points</strong> — Deal moved to <em>Evaluation</em> stage</li>
-                <li><strong>3 points</strong> — Deal moved to <em>Negotiation</em> stage</li>
-            </ul>
-        </div>
+<div class="rule-card">
+<h3>🎯 EARN POINTS — Create Qualified Pipeline</h3>
+<p>Points earned when a new self-sourced opportunity becomes an SQL (Stage 2+):</p>
+<table class="scoring-table">
+<tr><td>500K–999K GPV</td><td>+1 point</td></tr>
+<tr><td>$1M–$1.99M GPV</td><td>+2 points</td></tr>
+<tr><td>$2M+ GPV</td><td>+3 points</td></tr>
+</table>
+<p class="note">Bigger swings = bigger points.</p>
+</div>
 
-        <div class="rule-card">
-            <h3>Deal Size Multipliers</h3>
-            <ul>
-                <li><strong>1x multiplier</strong> — Deal value $500K – $999K</li>
-                <li><strong>2x multiplier</strong> — Deal value $1M – $1.99M</li>
-                <li><strong>3x multiplier</strong> — Deal value $2M+</li>
-            </ul>
-        </div>
+<div class="rule-card">
+<h3>📈 BUILD + PROGRESS</h3>
+<table class="scoring-table">
+<tr><td>SAMPS demo call held</td><td>+2 pts</td></tr>
+<tr><td>Hit your weekly SQL GPV target</td><td>+3 pts</td></tr>
+<tr><td>Finish #1 in self-sourced SQL GPV on your team that week</td><td>+5 pts</td></tr>
+</table>
+</div>
 
-        <div class="rule-card">
-            <h3>Example Calculations</h3>
-            <div class="example">
-                <p><strong>Example 1:</strong> A $750K deal moves to Evaluation = 2 pts × 1x = <strong>2 points</strong></p>
-                <p style="margin-top:0.5rem"><strong>Example 2:</strong> A $1.5M deal moves to Negotiation = 3 pts × 2x = <strong>6 points</strong></p>
-                <p style="margin-top:0.5rem"><strong>Example 3:</strong> A $2.5M deal moves to Created = 1 pt × 3x = <strong>3 points</strong></p>
-            </div>
-        </div>
+<div class="rule-card">
+<h3>📊 WEEKLY SQL GPV TARGETS</h3>
+<table class="scoring-table">
+<tr><td>Tier 1</td><td>$4.5M</td></tr>
+<tr><td>Tier 2</td><td>$4.0M</td></tr>
+<tr><td>Tier 3</td><td>$3.5M</td></tr>
+</table>
+<p class="note">Keeps competition fair across territories while holding everyone accountable.</p>
+</div>
 
-        <div class="rule-card">
-            <h3>Eligibility</h3>
-            <ul>
-                <li>Minimum deal size: <strong>$500K</strong></li>
-                <li>Pre-existing deals already in Evaluation stage <strong>are eligible</strong> if they advance to Negotiation during the contest period</li>
-                <li>All stage movements must occur between September 1–30, 2026</li>
-                <li>Data sourced from Salesforce (SFDC) — refreshed daily at 9:00 AM PT</li>
-            </ul>
-        </div>
-    </div>
+<div class="rule-card incentivize">
+<h3>🔥 WHAT WE'RE INCENTIVIZING</h3>
+<p>The contest rewards both consistency and ambition.</p>
+<ul>
+<li>SQL creation = repeatable points</li>
+<li>Upmarket SQL creation = more points</li>
+<li>Demo/SAMPS = quality behavior</li>
+<li>Weekly GPV target = consistency</li>
+<li>#1 team SQL GPV = competitive accelerator</li>
+</ul>
+</div>
+
+<div class="rule-card prizes">
+<h3>🏆 PRIZES</h3>
+<div class="prize-item">🥇 1st Place: $500</div>
+<div class="prize-item">🥈 2nd Place: $300</div>
+<div class="prize-item">🥉 3rd Place: $200</div>
+<p class="prize-total">$1,000 total prize pool</p>
+</div>
 </div>
 
 <footer>
-    <div class="creators">Created by Nate Obermark and Gloria Pena</div>
-    <div>Data refreshed daily at 9:00 AM PT from SFDC</div>
+<p>Created by Nate Obermark and Gloria Pena</p>
+<p>Data refreshed daily at 9:00 AM PT from SFDC</p>
 </footer>
+</div>
 
 <script>
-    // MANAGERS
-    const managers = [
-        "Nate Obermark", "Colter Wilson", "Bryan Carter", "Brett Rousse",
-        "Jonathan Sheridan", "Alison Rushworth", "Gareth James", "Steve McMahon",
-        "Jonathan DeJesus", "Zachary Farley", "Dan Cook", "Kristin Moore",
-        "Meghan McFarlane", "Chris Moran", "Sean Avery", "Phillip Skillern",
-        "Ramon Quevedo", "Alessandra Verne", "Scott Hockaday", "Matthew Vitale",
-        "Stephen Stinchcomb", "Derek Kopkin"
-    ];
+const teams = [
+"Nate Obermark","Colter Wilson","Bryan Carter","Brett Rousse","Jonathan Sheridan",
+"Alison Rushworth","Gareth James","Steve McMahon","Jonathan DeJesus","Zachary Farley",
+"Dan Cook","Kristin Moore","Meghan McFarlane","Chris Moran","Sean Avery",
+"Phillip Skillern","Ramon Quevedo","Alessandra Verne","Scott Hockaday","Matthew Vitale",
+"Stephen Stinchcomb","Derek Kopkin"
+];
 
-    // Populate leaderboard
-    const tbody = document.getElementById('leaderboard-body');
-    managers.forEach((name, i) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td class="rank">${i + 1}</td>
-            <td class="manager-name">${name}</td>
-            <td class="pts">0</td>
-            <td class="pts">0</td>
-            <td class="pts">0</td>
-            <td class="total">0</td>
-        `;
-        tbody.appendChild(tr);
-    });
+// Build filter buttons
+const filterBar = document.getElementById('filterBar');
+const allBtn = document.createElement('button');
+allBtn.className = 'filter-btn active';
+allBtn.textContent = 'All Teams';
+allBtn.dataset.team = 'all';
+filterBar.appendChild(allBtn);
+teams.forEach(t => {
+const btn = document.createElement('button');
+btn.className = 'filter-btn';
+btn.textContent = t;
+btn.dataset.team = t;
+filterBar.appendChild(btn);
+});
 
-    // TABS
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById(btn.dataset.tab).classList.add('active');
-        });
-    });
+// Filter logic
+filterBar.addEventListener('click', e => {
+if (!e.target.classList.contains('filter-btn')) return;
+filterBar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+e.target.classList.add('active');
+// Filtering would apply here when data is populated
+});
 
-    // COUNTDOWN
-    function updateCountdown() {
-        const end = new Date('2026-09-30T23:59:59-07:00');
-        const now = new Date();
-        const diff = end - now;
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+btn.addEventListener('click', () => {
+document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+btn.classList.add('active');
+document.getElementById(btn.dataset.tab).classList.add('active');
+});
+});
 
-        if (diff <= 0) {
-            document.getElementById('countdown').innerHTML = 'Contest has ended!';
-            return;
-        }
-
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-        document.getElementById('countdown').innerHTML =
-            `<span>${days}</span>d <span>${hours}</span>h <span>${minutes}</span>m <span>${seconds}</span>s remaining`;
-    }
-
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
+// Countdown timer — Sept 30, 2026 23:59:59 PT (UTC-7 during PDT)
+function updateCountdown() {
+const end = new Date('2026-10-01T06:59:59Z'); // Sept 30 23:59:59 PT in UTC
+const now = new Date();
+const diff = end - now;
+if (diff <= 0) {
+document.getElementById('countdown').innerHTML = '<span>Contest has ended!</span>';
+return;
+}
+const days = Math.floor(diff / 86400000);
+const hrs = Math.floor((diff % 86400000) / 3600000);
+const mins = Math.floor((diff % 3600000) / 60000);
+const secs = Math.floor((diff % 60000) / 1000);
+document.getElementById('countdown').innerHTML =
+`<span>${days}</span>d <span>${hrs}</span>h <span>${mins}</span>m <span>${secs}</span>s remaining`;
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
 </script>
-
 </body>
 </html>
