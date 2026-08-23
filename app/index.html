@@ -6,54 +6,58 @@
 <title>Pipeline Points — Field Pipeline Challenge</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;padding:2rem 1rem}
+body{background:#12121a;color:#f5f0eb;font-family:'Square Sans Text',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;padding:2rem 1rem}
 .container{max-width:1200px;margin:0 auto}
 header{text-align:center;padding:2rem 0 1.5rem}
+.brand{color:#8a8a9a;font-size:0.75rem;letter-spacing:4px;text-transform:uppercase;margin-bottom:0.5rem}
 .title{font-size:4rem;font-weight:900;letter-spacing:-2px;margin-bottom:0.5rem}
-.title .red{color:#e63946}
-.title .white{color:#fff}
-.subtitle{color:#888;letter-spacing:3px;text-transform:uppercase;font-size:0.85rem;margin-bottom:1.5rem}
-.date-badge{display:inline-block;border:2px solid #ffd700;color:#ffd700;padding:0.5rem 1.5rem;border-radius:50px;font-weight:700;font-size:0.9rem;margin-bottom:1rem}
-.countdown{font-size:1.5rem;font-weight:700;color:#fff;margin:1rem 0}
-.countdown span{color:#ffd700}
-.prize-pool{font-size:1.3rem;color:#ffd700;font-weight:700;margin-bottom:2rem}
-.tabs{display:flex;gap:0.5rem;border-bottom:2px solid #1a1a1a;margin-bottom:2rem;flex-wrap:wrap}
-.tab-btn{background:none;border:none;color:#888;font-size:1rem;padding:0.75rem 1.5rem;cursor:pointer;border-bottom:3px solid transparent;transition:all 0.2s;font-weight:600}
-.tab-btn:hover{color:#fff}
-.tab-btn.active{color:#ffd700;border-bottom-color:#ffd700}
+.title .accent{color:#d4622b}
+.title .white{color:#f5f0eb}
+.subtitle{color:#8a8a9a;letter-spacing:3px;text-transform:uppercase;font-size:0.85rem;margin-bottom:1.5rem}
+.date-badge{display:inline-block;border:2px solid #d4952b;color:#d4952b;padding:0.5rem 1.5rem;border-radius:50px;font-weight:700;font-size:0.9rem;margin-bottom:1rem}
+.countdown{font-size:1.5rem;font-weight:700;color:#f5f0eb;margin:1rem 0}
+.countdown span{color:#d4952b}
+.prize-pool{font-size:1.3rem;color:#d4952b;font-weight:700;margin-bottom:2rem}
+.tabs{display:flex;gap:0.5rem;border-bottom:2px solid #2a2a3a;margin-bottom:2rem;flex-wrap:wrap}
+.tab-btn{background:none;border:none;color:#8a8a9a;font-size:1rem;padding:0.75rem 1.5rem;cursor:pointer;border-bottom:3px solid transparent;transition:all 0.2s;font-weight:600}
+.tab-btn:hover{color:#f5f0eb}
+.tab-btn.active{color:#d4622b;border-bottom-color:#d4622b}
 .tab-content{display:none}
 .tab-content.active{display:block}
 .filter-bar{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem}
-.filter-btn{background:#111;border:1px solid #222;color:#888;padding:0.4rem 0.9rem;border-radius:20px;cursor:pointer;font-size:0.8rem;transition:all 0.2s}
-.filter-btn:hover{border-color:#ffd700;color:#ffd700}
-.filter-btn.active{background:#ffd700;color:#0a0a0a;border-color:#ffd700;font-weight:700}
-.leaderboard-header{color:#888;font-size:0.95rem;margin-bottom:1.5rem;text-align:center}
+.filter-btn{background:#1c1c2a;border:1px solid #2a2a3a;color:#8a8a9a;padding:0.4rem 0.9rem;border-radius:20px;cursor:pointer;font-size:0.8rem;transition:all 0.2s}
+.filter-btn:hover{border-color:#d4622b;color:#d4622b}
+.filter-btn.active{background:#d4622b;color:#fff;border-color:#d4622b;font-weight:700}
+.leaderboard-header{color:#8a8a9a;font-size:0.95rem;margin-bottom:1.5rem;text-align:center}
 .table-wrapper{overflow-x:auto}
-table{width:100%;border-collapse:collapse;background:#111;border-radius:8px;overflow:hidden}
-th{background:#1a1a1a;color:#ffd700;padding:0.75rem 1rem;text-align:left;font-size:0.8rem;text-transform:uppercase;letter-spacing:1px}
-td{padding:0.75rem 1rem;border-bottom:1px solid #1a1a1a;font-size:0.9rem}
+table{width:100%;border-collapse:collapse;background:#1c1c2a;border-radius:8px;overflow:hidden}
+th{background:#232336;color:#d4952b;padding:0.75rem 1rem;text-align:left;font-size:0.8rem;text-transform:uppercase;letter-spacing:1px}
+td{padding:0.75rem 1rem;border-bottom:1px solid #2a2a3a;font-size:0.9rem}
+tr:hover td{background:#232336}
 tr:last-child td{border-bottom:none}
-.placeholder-row td{text-align:center;color:#666;padding:2rem;font-style:italic}
-.week-card{background:#111;border:1px solid #1a1a1a;border-radius:8px;padding:1.5rem 2rem;margin-bottom:1rem}
-.week-card h3{color:#ffd700;margin-bottom:0.5rem}
-.week-card p{color:#888}
-.rule-card{background:#111;border:1px solid #1a1a1a;border-radius:8px;padding:1.5rem 2rem;margin-bottom:1.5rem}
-.rule-card h3{margin-bottom:1rem;font-size:1.2rem}
-.rule-card p{color:#ccc;margin-bottom:0.75rem;line-height:1.6}
+.placeholder-row td{text-align:center;color:#6a6a7a;padding:2rem;font-style:italic}
+.placeholder-row:hover td{background:transparent}
+.week-card{background:#1c1c2a;border:1px solid #2a2a3a;border-radius:8px;padding:1.5rem 2rem;margin-bottom:1rem;transition:border-color 0.2s}
+.week-card:hover{border-color:#d4622b}
+.week-card h3{color:#d4952b;margin-bottom:0.5rem}
+.week-card p{color:#8a8a9a}
+.rule-card{background:#1c1c2a;border:1px solid #2a2a3a;border-radius:8px;padding:1.5rem 2rem;margin-bottom:1.5rem}
+.rule-card h3{margin-bottom:1rem;font-size:1.2rem;color:#f5f0eb}
+.rule-card p{color:#b8b8c8;margin-bottom:0.75rem;line-height:1.6}
 .rule-card ul{list-style:none;padding:0}
-.rule-card ul li{color:#ccc;padding:0.4rem 0;padding-left:1.2rem;position:relative;line-height:1.6}
-.rule-card ul li::before{content:"→";position:absolute;left:0;color:#ffd700}
+.rule-card ul li{color:#b8b8c8;padding:0.4rem 0;padding-left:1.2rem;position:relative;line-height:1.6}
+.rule-card ul li::before{content:"→";position:absolute;left:0;color:#d4622b}
 .scoring-table{width:100%;margin:1rem 0}
-.scoring-table td{padding:0.5rem 1rem;border-bottom:1px solid #1a1a1a}
-.scoring-table td:first-child{color:#ccc}
-.scoring-table td:last-child{color:#ffd700;font-weight:700;text-align:right}
-.rule-card.incentivize{background:linear-gradient(135deg,#1a0a0a,#0a0a0a);border-color:#e63946}
-.rule-card.prizes{background:linear-gradient(135deg,#2a1a00,#0a0a0a);border:2px solid #ffd700;text-align:center}
-.rule-card.prizes h3{color:#ffd700}
+.scoring-table td{padding:0.5rem 1rem;border-bottom:1px solid #2a2a3a}
+.scoring-table td:first-child{color:#b8b8c8}
+.scoring-table td:last-child{color:#d4952b;font-weight:700;text-align:right}
+.rule-card.incentivize{background:linear-gradient(135deg,#1a1225,#1c1c2a);border-color:#8b2252}
+.rule-card.prizes{background:linear-gradient(135deg,#2a1f10,#1c1c2a);border:2px solid #d4952b;text-align:center}
+.rule-card.prizes h3{color:#d4952b}
 .prize-item{font-size:1.3rem;margin:0.75rem 0;font-weight:700}
-.prize-total{color:#ffd700;margin-top:1rem;font-size:1.1rem}
-.note{color:#888;font-size:0.85rem;font-style:italic;margin-top:0.75rem}
-footer{text-align:center;margin-top:3rem;padding:2rem 0;border-top:1px solid #1a1a1a;color:#666;font-size:0.85rem}
+.prize-total{color:#d4952b;margin-top:1rem;font-size:1.1rem}
+.note{color:#8a8a9a;font-size:0.85rem;font-style:italic;margin-top:0.75rem}
+footer{text-align:center;margin-top:3rem;padding:2rem 0;border-top:1px solid #2a2a3a;color:#6a6a7a;font-size:0.85rem}
 footer p{margin:0.3rem 0}
 @media(max-width:768px){
 .title{font-size:2.5rem}
@@ -66,7 +70,8 @@ footer p{margin:0.3rem 0}
 <body>
 <div class="container">
 <header>
-<div class="title"><span class="red">PIPELINE</span> <span class="white">POINTS</span></div>
+<div class="brand">◻ SQUARE FIELD SALES</div>
+<div class="title"><span class="accent">PIPELINE</span> <span class="white">POINTS</span></div>
 <div class="subtitle">FIELD PIPELINE CHALLENGE &middot; SELF-SOURCED SQL &middot; SEPTEMBER 2026</div>
 <div class="date-badge">SEPTEMBER 1 – 30, 2026</div>
 <div class="countdown" id="countdown">Loading...</div>
