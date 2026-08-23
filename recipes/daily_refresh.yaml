@@ -1,0 +1,21 @@
+version: "1.0"
+title: "Pipeline Points - Daily Leaderboard Refresh"
+description: "Pulls contest scoring data from Snowflake and updates the Pipeline Points leaderboard website daily at 9 AM PT"
+
+instructions: |
+  You are refreshing the Pipeline Points contest leaderboard.
+  
+  1. Read the scoring SQL query from /Users/nateo/pipeline-accelerator/sql/contest_scoring.sql
+  
+  2. Run it using: sq agent-tools query-expert execute-query --query '<full SQL>'
+  
+  3. Take the results and update the JavaScript data array in /Users/nateo/pipeline-accelerator/app/index.html
+     - Update the reps array with fresh data (FULL_NAME, MANAGER, sql_creation_pts, samps_demo_pts, weekly_target_pts, team_winner_pts, total_points)
+     - Update the "Last updated" timestamp in the footer
+  
+  4. Push the updated site to GitHub:
+     cd /Users/nateo/pipeline-accelerator && git add -A && git commit -m "Daily refresh: $(date '+%Y-%m-%d %I:%M %p PT')" && git push
+  
+  5. The GitHub Pages site auto-deploys from main branch.
+
+  Note: If the contest hasn't started yet (before Sept 1), all scores will be 0. Still push the update to confirm the pipeline is working.
