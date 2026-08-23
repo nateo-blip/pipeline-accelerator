@@ -8,14 +8,44 @@ SET contest_start = '2026-09-01';
 SET contest_end = '2026-09-30';
 
 -- ============================================================
--- 1. ROSTER: All active US Field AEs with their managers
+-- 1. ROSTER: All active Field AEs with their managers and tier
 -- ============================================================
 WITH roster AS (
     SELECT 
         ec.FULL_NAME,
         ec.DIRECT_LEAD AS MANAGER,
         ec.SFDC_OWNER_ID,
-        ec.EMPLOYEE_ID
+        ec.EMPLOYEE_ID,
+        ec.CITY,
+        ec.COUNTRY,
+        CASE 
+            -- Tier 1 - US
+            WHEN ec.COUNTRY = 'US' AND ec.CITY IN ('Chicago','Dallas','Fort Worth','Fremont','Los Angeles','Miami','New York City','San Francisco','San Jose','San Mateo') THEN 1
+            -- Tier 1 - CA
+            WHEN ec.COUNTRY = 'CA' AND ec.CITY IN ('Toronto','Vancouver') THEN 1
+            -- Tier 1 - AU
+            WHEN ec.COUNTRY = 'AU' AND ec.CITY IN ('Melbourne','Sydney') THEN 1
+            -- Tier 1 - GB
+            WHEN ec.COUNTRY = 'GB' AND ec.CITY IN ('London') THEN 1
+            -- Tier 2 - US
+            WHEN ec.COUNTRY = 'US' AND ec.CITY IN ('Atlanta','Austin','Baltimore','Boston','Charlotte','Cincinnati','Cleveland','Columbus','Denver','Detroit','Fort Lauderdale','Hackensack','Honolulu','Houston','Indianapolis','Jacksonville','Jersey City','Las Vegas','Long Beach','Long Island','Milwaukee','Minneapolis','Morristown','Nashville','New Orleans','Newark','Orange County','Orlando','Philadelphia','Phoenix','Pittsburgh','Portland','Raleigh','Salt Lake City','San Antonio','San Diego','San Fernando Valley','San Gabriel Valley','Santa Clarita','Seattle','Somerset County','St. Louis','Tampa','Trenton','Ventura County','Washington','West Palm Beach','Westchester County') THEN 2
+            -- Tier 2 - CA
+            WHEN ec.COUNTRY = 'CA' AND ec.CITY IN ('Calgary','East York','Edmonton','Hamilton','Mississauga','North York','Ottawa','Richmond','Winnipeg') THEN 2
+            -- Tier 2 - AU
+            WHEN ec.COUNTRY = 'AU' AND ec.CITY IN ('Adelaide','Brisbane','Perth') THEN 2
+            -- Tier 2 - GB
+            WHEN ec.COUNTRY = 'GB' AND ec.CITY IN ('Birmingham','Manchester') THEN 2
+            -- Tier 3 - US
+            WHEN ec.COUNTRY = 'US' AND ec.CITY IN ('Birmingham','Boise','Charleston','Fort Myers','Jackson','Kansas City','Louisville','Manchester','Memphis','New Haven','Oklahoma City','Omaha','Providence','Rancho Cucamonga','Richmond','Riverside','Sacramento','Santa Barbara','Santa Cruz','Spokane','Stamford','Tucson','Virginia Beach') THEN 3
+            -- Tier 3 - CA
+            WHEN ec.COUNTRY = 'CA' AND ec.CITY IN ('Halifax','Kitchener','London','Montréal','St. Catharines') THEN 3
+            -- Tier 3 - AU
+            WHEN ec.COUNTRY = 'AU' AND ec.CITY IN ('Gold Coast','Hobart') THEN 3
+            -- Tier 3 - GB
+            WHEN ec.COUNTRY = 'GB' AND ec.CITY IN ('Belfast','Edinburgh','Glasgow','Newcastle') THEN 3
+            -- Default to Tier 2 if city not found
+            ELSE 2
+        END AS tier
     FROM APP_SALES.APP_SALES_ETL.FACT_EMPLOYMENT_CURRENT ec
     WHERE ec.MOST_RECENT = TRUE
       AND ec.ACTIVE_STATUS = 'Active'
@@ -94,16 +124,22 @@ weekly_sql_gpv AS (
 ),
 
 -- Weekly target hit: +3 pts
--- NOTE: Tier assignment TBD - using $4.0M default for now
 -- Tier 1 = $4.5M, Tier 2 = $4.0M, Tier 3 = $3.5M
 weekly_target_hits AS (
     SELECT 
-        FULL_NAME,
-        MANAGER,
-        WEEK_START,
-        weekly_gpv,
-        CASE WHEN weekly_gpv >= 4000000 THEN 3 ELSE 0 END AS target_points
-    FROM weekly_sql_gpv
+        w.FULL_NAME,
+        w.MANAGER,
+        w.WEEK_START,
+        w.weekly_gpv,
+        r.tier,
+        CASE 
+            WHEN r.tier = 1 AND w.weekly_gpv >= 4500000 THEN 3
+            WHEN r.tier = 2 AND w.weekly_gpv >= 4000000 THEN 3
+            WHEN r.tier = 3 AND w.weekly_gpv >= 3500000 THEN 3
+            ELSE 0
+        END AS target_points
+    FROM weekly_sql_gpv w
+    JOIN roster r ON w.FULL_NAME = r.FULL_NAME
 ),
 
 -- Team #1 each week: +5 pts
@@ -159,6 +195,9 @@ winner_pts_agg AS (
 SELECT 
     r.FULL_NAME,
     r.MANAGER,
+    r.tier AS TIER,
+    r.CITY,
+    r.COUNTRY,
     COALESCE(s.total_sql_pts, 0) AS sql_creation_pts,
     COALESCE(d.total_demo_pts, 0) AS samps_demo_pts,
     COALESCE(t.total_target_pts, 0) AS weekly_target_pts,
