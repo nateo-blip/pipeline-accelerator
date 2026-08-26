@@ -96,7 +96,7 @@ samps_demos AS (
     JOIN APP_SALES.APP_SALES_ETL.FACT_OPPORTUNITIES_REPORTING fo
         ON sa.OPPORTUNITY_ID = fo.OPPORTUNITY_ID
     JOIN roster r
-        ON fo.SFDC_OWNER_ID = r.SFDC_OWNER_ID
+        ON fo.OWNER_ID = r.SFDC_OWNER_ID
     WHERE sa.IS_DEMO = 1
       AND sa.ACTIVITY_DATE >= $contest_start
       AND sa.ACTIVITY_DATE <= $contest_end
