@@ -2,20 +2,105 @@ version: "1.0"
 title: "Pipeline Points - Daily Leaderboard Refresh"
 description: "Pulls contest scoring data from Snowflake and updates the Pipeline Points leaderboard website daily at 9 AM PT"
 
-instructions: |
-  You are refreshing the Pipeline Points contest leaderboard.
-  
-  1. Read the scoring SQL query from /Users/nateo/pipeline-accelerator/sql/contest_scoring.sql
-  
-  2. Run it using: sq agent-tools query-expert execute-query --query '<full SQL>'
-  
-  3. Take the results and update the JavaScript data array in /Users/nateo/pipeline-accelerator/app/index.html
-     - Update the reps array with fresh data (FULL_NAME, MANAGER, sql_creation_pts, samps_demo_pts, weekly_target_pts, team_winner_pts, total_points)
-     - Update the "Last updated" timestamp in the footer
-  
-  4. Push the updated site to GitHub:
-     cd /Users/nateo/pipeline-accelerator && git add -A && git commit -m "Daily refresh: $(date '+%Y-%m-%d %I:%M %p PT')" && git push
-  
-  5. The GitHub Pages site auto-deploys from main branch.
+extensions:
+  - developer
+  - extensionmanager
 
-  Note: If the contest hasn't started yet (before Sept 1), all scores will be 0. Still push the update to confirm the pipeline is working.
+instructions: |
+  You are refreshing the Pipeline Points contest leaderboard. Follow these steps exactly.
+
+  ## Step 1: Read and prepare the SQL query
+
+  Read the SQL from /Users/nateo/pipeline-accelerator/sql/contest_scoring.sql
+
+  The SQL file has comments (lines starting with --). You MUST strip all comments before executing.
+  Use this Python script to prepare the query:
+
+  ```
+  python3 << 'PYEOF'
+  import re
+  with open('/Users/nateo/pipeline-accelerator/sql/contest_scoring.sql') as f:
+      lines = f.readlines()
+  cleaned = []
+  for line in lines:
+      line = re.sub(r'--.*$', '', line)
+      stripped = line.strip()
+      if stripped:
+          cleaned.append(line.rstrip())
+  sql = ' '.join(cleaned)
+  sql = re.sub(r'\s+', ' ', sql).strip()
+  with open('/tmp/contest_query_clean.sql', 'w') as f:
+      f.write(sql)
+  print(f"Query prepared: {len(sql)} chars, dollar signs: {sql.count('$')}")
+  PYEOF
+  ```
+
+  ## Step 2: Execute the query in Snowflake
+
+  Run the prepared query:
+
+  ```
+  QUERY="$(cat /tmp/contest_query_clean.sql)"
+  sq agent-tools query-expert execute-query --query "$QUERY"
+  ```
+
+  Save the full JSON output to /tmp/contest_results.json using shell redirection.
+
+  If the query fails, stop and report the error. Do NOT proceed with stale data.
+
+  ## Step 3: Generate the updated JavaScript data
+
+  Use Python to parse the Snowflake results and generate the reps array:
+
+  ```
+  python3 << 'PYEOF'
+  import json
+  with open('/tmp/contest_results.json') as f:
+      data = json.load(f)
+  if data.get('status') != 'success':
+      print(f"ERROR: Query failed: {data}")
+      exit(1)
+  rows = data['data']
+  lines = ['const reps = [']
+  for r in rows:
+      name = r['FULL_NAME'].replace("'", "\\'")
+      team = r['MANAGER'].replace("'", "\\'")
+      lines.append(f"  {{name:'{name}',team:'{team}',sql:{r['SQL_CREATION_PTS']},demo:{r['SAMPS_DEMO_PTS']},target:{r['WEEKLY_TARGET_PTS']},winner:{r['TEAM_WINNER_PTS']},total:{r['TOTAL_POINTS']}}},")
+  lines.append('];')
+  with open('/tmp/reps_array.js', 'w') as f:
+      f.write('\n'.join(lines))
+  scored = sum(1 for r in rows if r['TOTAL_POINTS'] > 0)
+  print(f"Generated reps array: {len(rows)} reps, {scored} with points")
+  PYEOF
+  ```
+
+  ## Step 4: Update the HTML file
+
+  Use Python to replace the reps array and timestamp in the HTML:
+
+  ```
+  python3 << 'PYEOF'
+  import re, datetime
+  with open('/Users/nateo/pipeline-accelerator/app/index.html') as f:
+      html = f.read()
+  with open('/tmp/reps_array.js') as f:
+      new_reps = f.read().strip()
+  pattern = r'// === REP DATA.*?// === END REP DATA ==='
+  replacement = f'// === REP DATA (auto-refreshed daily from Snowflake) ===\n{new_reps}\n// === END REP DATA ==='
+  html = re.sub(pattern, replacement, html, flags=re.DOTALL)
+  now = datetime.datetime.now()
+  ts = now.strftime('%B %-d, %Y %-I:%M %p PT')
+  html = re.sub(r'<p>Last updated:.*?</p>', f'<p>Last updated: {ts}</p>', html)
+  with open('/Users/nateo/pipeline-accelerator/app/index.html', 'w') as f:
+      f.write(html)
+  print(f"Updated index.html with timestamp: {ts}")
+  PYEOF
+  ```
+
+  ## Step 5: Commit and push
+
+  ```
+  cd /Users/nateo/pipeline-accelerator && git add -A && git commit -m "Daily refresh: $(date '+%Y-%m-%d %I:%M %p PT')" && git push
+  ```
+
+  Report the final status: how many reps, how many with points, top 3 scorers.
