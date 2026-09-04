@@ -1,16 +1,17 @@
 -- PIPELINE POINTS - September 2026 Contest Scoring Query
 -- Pulls self-sourced SQL creation, stage progression, SAMPS demos, and weekly targets
--- Data sources: COHORTED_OPPORTUNITIES_PIPELINE, FACT_OPPORTUNITIES_REPORTING, SAMPS_ACTIVITIES, FACT_EMPLOYMENT_CURRENT
+-- Data sources: FACT_OPPORTUNITIES_REPORTING, SAMPS_ACTIVITIES, FACT_EMPLOYMENT_CURRENT
 -- Run daily at 9 AM PT to refresh leaderboard
 --
 -- KEY NOTES:
--- 1. PROGRAM_SOURCE on COHORTED_OPPORTUNITIES_PIPELINE is NULL for Stage 2 rows.
---    Must join to FACT_OPPORTUNITIES_REPORTING to get PROGRAM_SOURCE = 'AE' for self-sourced.
--- 2. CITY values in FACT_EMPLOYMENT_CURRENT are metro-area labels like "NYC Metro (Remote)",
+-- 1. Uses FACT_OPPORTUNITIES_REPORTING as the single source of truth for SQL qualification.
+--    COHORTED_OPPORTUNITIES_PIPELINE.MOVED_TO_STAGE_2_FINAL lags behind IS_SQL on
+--    FACT_OPPORTUNITIES_REPORTING, causing recently SQL'd opps to be missed.
+-- 2. Week buckets are derived from SQL_DATE using Saturday-start weeks
+--    (DATE_TRUNC('week', SQL_DATE) - INTERVAL '1 day') to match the existing convention.
+-- 3. CITY values in FACT_EMPLOYMENT_CURRENT are metro-area labels like "NYC Metro (Remote)",
 --    not exact city names. Use ILIKE for fuzzy matching.
--- 3. COUNTRY is "United States of America" not "US". Use ILIKE for matching.
--- 4. WEEK_START in COHORTED_OPPORTUNITIES_PIPELINE uses Saturday-start weeks.
---    Contest starts Aug 31 (Monday), so first WEEK_START is '2026-08-30' (Saturday).
+-- 4. COUNTRY is "United States of America" not "US". Use ILIKE for matching.
 
 -- ============================================================
 -- 1. ROSTER: All active Field AEs with their managers and tier
@@ -84,29 +85,28 @@ WITH roster AS (
 -- ============================================================
 -- 2. SQL CREATION POINTS: Self-sourced opps that become SQLs (Stage 2+)
 --    Points based on GPV tier.
---    Join to FACT_OPPORTUNITIES_REPORTING for PROGRAM_SOURCE = 'AE'
+--    Uses FACT_OPPORTUNITIES_REPORTING.IS_SQL + SQL_DATE as source of truth
+--    (replaces COHORTED_OPPORTUNITIES_PIPELINE.MOVED_TO_STAGE_2_FINAL which lags)
 -- ============================================================
 sql_creation AS (
     SELECT
-        cop.FULL_NAME,
-        cop.OPPORTUNITY_ID,
-        cop.TOTAL_ANNUAL_GPV_USD,
-        cop.WEEK_START,
+        fo.FULL_NAME,
+        fo.OPPORTUNITY_ID,
+        fo.TOTAL_ANNUAL_GPV_USD,
+        DATE_TRUNC('week', fo.SQL_DATE) - INTERVAL '1 day' AS WEEK_START,
         CASE
-            WHEN cop.TOTAL_ANNUAL_GPV_USD >= 2000000 THEN 3
-            WHEN cop.TOTAL_ANNUAL_GPV_USD >= 1000000 THEN 2
-            WHEN cop.TOTAL_ANNUAL_GPV_USD >= 500000 THEN 1
+            WHEN fo.TOTAL_ANNUAL_GPV_USD >= 2000000 THEN 3
+            WHEN fo.TOTAL_ANNUAL_GPV_USD >= 1000000 THEN 2
+            WHEN fo.TOTAL_ANNUAL_GPV_USD >= 500000 THEN 1
             ELSE 0
         END AS sql_points
-    FROM APP_SALES.APP_SALES_ETL.COHORTED_OPPORTUNITIES_PIPELINE cop
-    INNER JOIN APP_SALES.APP_SALES_ETL.FACT_OPPORTUNITIES_REPORTING fo
-        ON cop.OPPORTUNITY_ID = fo.OPPORTUNITY_ID
-    WHERE cop.SALES_TEAM = 'Sales - US Field'
+    FROM APP_SALES.APP_SALES_ETL.FACT_OPPORTUNITIES_REPORTING fo
+    WHERE fo.SALES_TEAM = 'Sales - US Field'
       AND fo.PROGRAM_SOURCE = 'AE'
-      AND cop.TOTAL_ANNUAL_GPV_USD >= 500000
-      AND cop.MOVED_TO_STAGE_2_FINAL = 1
-      AND cop.WEEK_START >= '2026-08-30'
-      AND cop.WEEK_START <= '2026-09-30'
+      AND fo.TOTAL_ANNUAL_GPV_USD >= 500000
+      AND fo.IS_SQL = TRUE
+      AND fo.SQL_DATE >= '2026-08-30'
+      AND fo.SQL_DATE <= '2026-09-30'
 ),
 
 -- ============================================================
@@ -132,22 +132,21 @@ samps_demos AS (
 -- ============================================================
 -- 4. WEEKLY SQL GPV: Sum of self-sourced SQL GPV per rep per week
 --    Used for: +3 pts if hit weekly target, +5 pts if #1 on team
+--    Uses FACT_OPPORTUNITIES_REPORTING.IS_SQL + SQL_DATE as source of truth
 -- ============================================================
 weekly_sql_gpv AS (
     SELECT
-        cop.FULL_NAME,
-        cop.CURRENT_MANAGER AS MANAGER,
-        cop.WEEK_START,
-        SUM(cop.TOTAL_ANNUAL_GPV_USD) AS weekly_gpv
-    FROM APP_SALES.APP_SALES_ETL.COHORTED_OPPORTUNITIES_PIPELINE cop
-    INNER JOIN APP_SALES.APP_SALES_ETL.FACT_OPPORTUNITIES_REPORTING fo
-        ON cop.OPPORTUNITY_ID = fo.OPPORTUNITY_ID
-    WHERE cop.SALES_TEAM = 'Sales - US Field'
+        fo.FULL_NAME,
+        fo.CURRENT_MANAGER AS MANAGER,
+        DATE_TRUNC('week', fo.SQL_DATE) - INTERVAL '1 day' AS WEEK_START,
+        SUM(fo.TOTAL_ANNUAL_GPV_USD) AS weekly_gpv
+    FROM APP_SALES.APP_SALES_ETL.FACT_OPPORTUNITIES_REPORTING fo
+    WHERE fo.SALES_TEAM = 'Sales - US Field'
       AND fo.PROGRAM_SOURCE = 'AE'
-      AND cop.TOTAL_ANNUAL_GPV_USD >= 500000
-      AND cop.MOVED_TO_STAGE_2_FINAL = 1
-      AND cop.WEEK_START >= '2026-08-30'
-      AND cop.WEEK_START <= '2026-09-30'
+      AND fo.TOTAL_ANNUAL_GPV_USD >= 500000
+      AND fo.IS_SQL = TRUE
+      AND fo.SQL_DATE >= '2026-08-30'
+      AND fo.SQL_DATE <= '2026-09-30'
     GROUP BY 1, 2, 3
 ),
 
