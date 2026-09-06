@@ -1,12 +1,5 @@
-version: "1.0"
 title: "Pipeline Points - Daily Leaderboard Refresh"
 description: "Pulls contest scoring data from Snowflake and updates the Pipeline Points leaderboard website daily at 9 AM PT"
-
-extensions:
-  - type: platform
-    name: developer
-  - type: platform
-    name: skills
 
 instructions: |
   You are refreshing the Pipeline Points contest leaderboard. Follow these steps exactly.
@@ -103,3 +96,6 @@ instructions: |
   ```
 
   Report: total reps, reps with points, top 3 scorers with their point totals.
+
+settings:
+  max_turns: 25
