@@ -70,7 +70,7 @@ instructions: |
   ```
   python3 << 'PYEOF'
   import re, datetime
-  with open('/Users/nateo/pipeline-accelerator/app/index.html') as f:
+  with open('/Users/nateo/pipeline-accelerator/docs/index.html') as f:
       html = f.read()
   with open('/tmp/reps_array.js') as f:
       new_reps = f.read().strip()
@@ -80,7 +80,7 @@ instructions: |
   now = datetime.datetime.now()
   ts = now.strftime('%B %-d, %Y %-I:%M %p PT')
   html = re.sub(r'<p>Last updated:.*?</p>', f'<p>Last updated: {ts}</p>', html)
-  with open('/Users/nateo/pipeline-accelerator/app/index.html', 'w') as f:
+  with open('/Users/nateo/pipeline-accelerator/docs/index.html', 'w') as f:
       f.write(html)
   print(f"Updated index.html with timestamp: {ts}")
   PYEOF
