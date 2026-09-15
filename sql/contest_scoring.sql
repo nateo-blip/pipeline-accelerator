@@ -112,8 +112,10 @@ sql_creation AS (
 -- ============================================================
 -- 3. SAMPS DEMO POINTS: +2 pts per completed SAMPS demo call
 --    NOTE: 98% of SAMPS_ACTIVITIES rows have NULL OPPORTUNITY_ID,
---    so we join via SFDC_ACCOUNT_ID -> SFDC_ACCOUNTS -> OWNER_ID
---    to find the AE who owns the account the demo was done on.
+--    so we join via SFDC_ACCOUNT_ID -> SFDC_ACCOUNTS -> OWNER_ID.
+--    SFDC_ACCOUNTS.OWNER_ID uses mixed org-era prefixes (0054W, 005V4, 005Kb)
+--    that don't reliably match roster.SFDC_OWNER_ID directly. We bridge
+--    through SFDC_OWNERS (OWNER_ID -> FULL_NAME) then match to roster by name.
 -- ============================================================
 samps_demos AS (
     SELECT
@@ -124,8 +126,10 @@ samps_demos AS (
     FROM APP_SALES.APP_SALES_ETL.SAMPS_ACTIVITIES sa
     INNER JOIN APP_SALES.APP_SALES_ETL.SFDC_ACCOUNTS acct
         ON sa.SFDC_ACCOUNT_ID = acct.ACCOUNT_ID
+    INNER JOIN APP_SALES.APP_SALES_ETL.SFDC_OWNERS so
+        ON acct.OWNER_ID = so.OWNER_ID
     INNER JOIN roster r
-        ON acct.OWNER_ID = r.SFDC_OWNER_ID
+        ON so.FULL_NAME = r.FULL_NAME
     WHERE sa.IS_DEMO = 1
       AND sa.ACTIVITY_DATE >= '2026-08-31'
       AND sa.ACTIVITY_DATE <= '2026-09-30'
