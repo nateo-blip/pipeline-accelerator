@@ -110,15 +110,14 @@ sql_creation AS (
 ),
 
 -- ============================================================
--- 3. SAMPS DEMO POINTS: +2 pts per completed SAMPS specialist call
---    Attribution: AE -> SAMPS_ESCALATIONS (Deal Support Request) -> account
---    -> SAMPS_ACTIVITIES on same account. This captures all specialist calls
---    the AE initiated, not just those flagged IS_DEMO=1 (which misses DSR
---    consultations for F&B modes, Payroll, Loans, Shifts, etc.).
---    Previous approach via account ownership missed ~75% of demos because
---    account OWNER_ID often belongs to BDRs/AMs, not the requesting AE.
---    Fallback: also include IS_DEMO=1 demos attributed via account owner
---    (catches demos where no escalation exists).
+-- 3. SAMPS DEMO POINTS: +2 pts per completed SAMPS specialist interaction
+--    Two fixes applied:
+--    (a) Attribution: Escalation-based (AE who filed DSR) + account-owner fallback.
+--        Old approach used account ownership only, missing ~75% of demos.
+--    (b) Activity filter: CALL_ANSWERED is NULL for ~80% of non-Call activities
+--        (Strategy Syncs, "Other" type DSR consultations). These are real
+--        interactions (avg 47 min, 98% DM-worked) that were being dropped.
+--        Now includes: CALL_ANSWERED=1 OR (NULL + real activity type + duration>0).
 -- ============================================================
 samps_demos AS (
     -- Method 1: Escalation-based attribution (AE who filed the DSR)
@@ -132,12 +131,15 @@ samps_demos AS (
         ON sa.SFDC_ACCOUNT_ID = esc.SFDC_ACCOUNT_ID
     INNER JOIN roster r
         ON esc.ESCALATOR_NAME = r.FULL_NAME
-    WHERE sa.CALL_ANSWERED = 1
+    WHERE (sa.CALL_ANSWERED = 1
+           OR (sa.CALL_ANSWERED IS NULL
+               AND sa.ACTIVITY_TYPE_GROUPED IN ('Call', 'Other', 'Strategy Sync (Google Meet)', 'Strategy Sync (Slack)')
+               AND sa.CALL_DURATION_MINUTES > 0))
       AND sa.ACTIVITY_DATE >= '2026-08-31'
       AND sa.ACTIVITY_DATE <= '2026-09-30'
       AND esc.CREATED_DATE >= '2026-07-01'
     UNION
-    -- Method 2: Account-owner fallback for IS_DEMO=1 with no escalation match
+    -- Method 2: Account-owner fallback (catches demos where no escalation exists)
     SELECT DISTINCT
         r.FULL_NAME,
         sa.TASK_ID,
@@ -150,8 +152,10 @@ samps_demos AS (
         ON acct.OWNER_ID = so.OWNER_ID
     INNER JOIN roster r
         ON so.FULL_NAME = r.FULL_NAME
-    WHERE sa.IS_DEMO = 1
-      AND sa.CALL_ANSWERED = 1
+    WHERE (sa.CALL_ANSWERED = 1
+           OR (sa.CALL_ANSWERED IS NULL
+               AND sa.ACTIVITY_TYPE_GROUPED IN ('Call', 'Other', 'Strategy Sync (Google Meet)', 'Strategy Sync (Slack)')
+               AND sa.CALL_DURATION_MINUTES > 0))
       AND sa.ACTIVITY_DATE >= '2026-08-31'
       AND sa.ACTIVITY_DATE <= '2026-09-30'
 ),
